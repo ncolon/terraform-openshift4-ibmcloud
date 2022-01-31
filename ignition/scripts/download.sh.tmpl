@@ -1,0 +1,27 @@
+#!/bin/bash
+
+test -e ${installer_workspace} || mkdir -p ${installer_workspace}
+
+case $(uname -s) in
+  Darwin)
+    curl -sLo ${installer_workspace}/jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-osx-amd64
+    PLATFORM=mac ;;
+  Linux)
+    curl -sLo ${installer_workspace}/jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+    PLATFORM=linux ;;
+  *)
+    exit 1;;
+esac
+
+curl ${installer_url}/openshift-install-$PLATFORM.tar.gz -o ${installer_workspace}/openshift-install-$PLATFORM.tar.gz
+tar zxvf ${installer_workspace}/openshift-install-$PLATFORM.tar.gz -C ${installer_workspace}
+curl ${installer_url}/openshift-client-$PLATFORM.tar.gz -o ${installer_workspace}/openshift-client-$PLATFORM.tar.gz
+tar zxvf ${installer_workspace}/openshift-client-$PLATFORM.tar.gz -C ${installer_workspace}
+
+chmod u+x ${installer_workspace}/jq
+
+rm -f ${installer_workspace}/*.tar.gz ${installer_workspace}/robots*.txt* ${installer_workspace}/README.md
+if [[ "${airgapped_enabled}" == "true" ]] ; then
+  ${installer_workspace}/oc adm release extract -a ${pull_secret} --command=openshift-install ${airgapped_repository}:${openshift_version}-x86_64
+  mv ${path_root}/openshift-install ${installer_workspace}
+fi
