@@ -98,6 +98,7 @@ variable "openshift_cluster_name" {
 variable "openshift_version" {
   type        = string
   description = "Version of OpenShift to install"
+  default     = "stable-4.10"
 }
 
 variable "openshift_base_domain" {
@@ -203,23 +204,3 @@ variable "rhcos_image_url" {
   description = "(optional) URL of RHCOS image"
   default     = ""
 }
-
-# variable "user_name" {
-#   type = string
-# }
-
-# variable "user_email" {
-#   type = string
-# }
-
-# variable "git_org" {
-#   type = string
-# }
-
-# variable "git_api_token" {
-#   type = string
-# }
-
-# variable "ibm_entitlement_key" {
-#   type = string
-# }
