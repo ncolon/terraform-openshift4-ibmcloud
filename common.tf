@@ -1,17 +1,19 @@
 data "http" "images" {
-  url = "https://raw.githubusercontent.com/openshift/installer/release-${local.major_version}/data/data/rhcos.json"
+  count = var.rhcos_image_url == "" ? 1 : 0
+  url   = "https://raw.githubusercontent.com/openshift/installer/release-${local.major_version}/data/data/rhcos.json"
   request_headers = {
     Accept = "application/json"
   }
 }
 
 locals {
-  cluster_id       = "${var.openshift_cluster_name}-${random_string.cluster_id.result}"
-  major_version    = length(regexall("-", var.openshift_version)) > 0 ? split("-", var.openshift_version)[1] : join(".", slice(split(".", var.openshift_version), 0, 2))
-  rhcos_image_path = lookup(jsondecode(data.http.images.body), "baseURI")
-  rhcos_image_file = lookup(lookup(lookup(jsondecode(data.http.images.body), "images"), "ibmcloud"), "path")
-  rhcos_image      = join("", [local.rhcos_image_path, local.rhcos_image_file])
-  public_ssh_key   = var.public_ssh_key == "" ? tls_private_key.installkey[0].public_key_openssh : file(var.public_ssh_key)
+  cluster_id    = "${var.openshift_cluster_name}-${random_string.cluster_id.result}"
+  major_version = length(regexall("-", var.openshift_version)) > 0 ? split("-", var.openshift_version)[1] : join(".", slice(split(".", var.openshift_version), 0, 2))
+  rhcos_image = var.rhcos_image_url == "" ? join("", [
+    lookup(jsondecode(data.http.images.0.body), "baseURI"),
+    lookup(lookup(lookup(jsondecode(data.http.images.0.body), "images"), "ibmcloud"), "path")
+  ]) : var.rhcos_image_url
+  public_ssh_key = var.public_ssh_key == "" ? tls_private_key.installkey[0].public_key_openssh : file(var.public_ssh_key)
 }
 
 data "ibm_is_zones" "zones" {

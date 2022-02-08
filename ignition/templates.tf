@@ -32,10 +32,11 @@ platform:
   ibmcloud:
     region: ${var.ibmcloud_region}
     resourceGroupName: ${var.resource_group_name}
-    vpc: ${var.vpc_id}
-    vpcResourceGroupName: ${var.network_resource_group_name == "" ? var.resource_group_name : var.network_resource_group_name}
-    subnets:%{for subnet in var.worker_subnet_ids}
-      - ${subnet}%{endfor}
+    # TODO: Removed from 4.10 in rc.1, revisit when added back
+    # vpc: ${var.vpc_id}
+    # vpcResourceGroupName: ${var.network_resource_group_name == "" ? var.resource_group_name : var.network_resource_group_name}
+    # subnets:%{for subnet in var.worker_subnet_ids}
+    #   - ${subnet}%{endfor}
     # TODO: add support for defaultMachinePlatform
     # defaultMachinePlatform:
     #   bootVolume:
@@ -261,7 +262,7 @@ resource "local_file" "openshift_cluster_api_worker_machineset_yaml" {
   filename = "${local.installer_workspace}/openshift/99_openshift-cluster-api_worker-machineset-${count.index}.yaml"
 }
 
-data "template_file" "openshift-cloud-controller-manager-credentials" {
+data "template_file" "manifests-cloud-controller-manager-credentials" {
   template = <<EOF
 apiVersion: v1
 data:
@@ -274,15 +275,15 @@ type: Opaque
 EOF
 }
 
-resource "local_file" "openshift-cloud-controller-manager-credentials" {
+resource "local_file" "manifests-cloud-controller-manager-credentials" {
   depends_on = [
     null_resource.generate_manifests,
   ]
-  content  = data.template_file.openshift-cloud-controller-manager-credentials.rendered
-  filename = "${local.installer_workspace}/openshift/99_openshift-cloud-controller-manager-credentials.yaml"
+  content  = data.template_file.manifests-cloud-controller-manager-credentials.rendered
+  filename = "${local.installer_workspace}/manifests/99_openshift-cloud-controller-manager-credentials.yaml"
 }
 
-data "template_file" "openshift-machine-api-credentials" {
+data "template_file" "manifests-machine-api-credentials" {
   template = <<EOF
 apiVersion: v1
 data:
@@ -295,16 +296,16 @@ type: Opaque
 EOF
 }
 
-resource "local_file" "openshift-machine-api-credentials" {
+resource "local_file" "manifests-machine-api-credentials" {
   depends_on = [
     null_resource.generate_manifests,
   ]
-  content  = data.template_file.openshift-machine-api-credentials.rendered
-  filename = "${local.installer_workspace}/openshift/99_openshift-machine-api-credentials.yaml"
+  content  = data.template_file.manifests-machine-api-credentials.rendered
+  filename = "${local.installer_workspace}/manifests/99_openshift-machine-api-credentials.yaml"
 }
 
 
-data "template_file" "openshift-ingress-operator-credentials" {
+data "template_file" "manifests-ingress-operator-credentials" {
   template = <<EOF
 apiVersion: v1
 data:
@@ -317,12 +318,12 @@ type: Opaque
 EOF
 }
 
-resource "local_file" "openshift-ingress-operator-credentials" {
+resource "local_file" "manifests-ingress-operator-credentials" {
   depends_on = [
     null_resource.generate_manifests,
   ]
-  content  = data.template_file.openshift-ingress-operator-credentials.rendered
-  filename = "${local.installer_workspace}/openshift/99_openshift-ingress-operator-credentials.yaml"
+  content  = data.template_file.manifests-ingress-operator-credentials.rendered
+  filename = "${local.installer_workspace}/manifests/99_openshift-ingress-operator-credentials.yaml"
 }
 
 data "template_file" "sclient_toml" {
@@ -340,7 +341,7 @@ provider_type = "g2"
 EOF
 }
 
-data "template_file" "openshift-cluster-csi-drivers-credentials" {
+data "template_file" "manifests-cluster-csi-drivers-credentials" {
   template = <<EOF
 apiVersion: v1
 data:
@@ -357,15 +358,15 @@ type: Opaque
 EOF
 }
 
-resource "local_file" "openshift-cluster-csi-drivers-credentials" {
+resource "local_file" "manifests-cluster-csi-drivers-credentials" {
   depends_on = [
     null_resource.generate_manifests,
   ]
-  content  = data.template_file.openshift-cluster-csi-drivers-credentials.rendered
-  filename = "${local.installer_workspace}/openshift/99_openshift-cluster-csi-drivers-credentials.yaml"
+  content  = data.template_file.manifests-cluster-csi-drivers-credentials.rendered
+  filename = "${local.installer_workspace}/manifests/99_openshift-cluster-csi-drivers-credentials.yaml"
 }
 
-data "template_file" "openshift-image-registry-credentials" {
+data "template_file" "manifests-image-registry-credentials" {
   template = <<EOF
 apiVersion: v1
 data:
@@ -378,10 +379,10 @@ type: Opaque
 EOF
 }
 
-resource "local_file" "openshift-image-registry-credentials" {
+resource "local_file" "manifests-image-registry-credentials" {
   depends_on = [
     null_resource.generate_manifests,
   ]
-  content  = data.template_file.openshift-image-registry-credentials.rendered
-  filename = "${local.installer_workspace}/openshift/99_openshift-image-registry-credentials.yaml"
+  content  = data.template_file.manifests-image-registry-credentials.rendered
+  filename = "${local.installer_workspace}/manifests/99_openshift-image-registry-credentials.yaml"
 }

@@ -1,7 +1,7 @@
 locals {
-  installer_workspace = "${path.root}/installer/${var.cluster_name}"
-  # openshift_installer_url = "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/${var.openshift_version}"
-  openshift_installer_url = "https://mirror.openshift.com/pub/openshift-v4/clients/ocp-dev-preview/4.10.0-fc.4"
+  installer_workspace     = "${path.root}/installer/${var.cluster_name}"
+  openshift_installer_url = "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/${var.openshift_version}"
+  # openshift_installer_url = "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/candidate-4.10"
 }
 
 resource "null_resource" "download_binaries" {
@@ -54,11 +54,11 @@ resource "null_resource" "generate_ignition" {
     local_file.manifests_cluster_infrastructure_02_yaml,
     local_file.openshift_cluster_api_master_machines_yaml,
     local_file.openshift_cluster_api_worker_machineset_yaml,
-    local_file.openshift-cloud-controller-manager-credentials,
-    local_file.openshift-machine-api-credentials,
-    local_file.openshift-ingress-operator-credentials,
-    local_file.openshift-cluster-csi-drivers-credentials,
-    local_file.openshift-image-registry-credentials
+    local_file.manifests-cloud-controller-manager-credentials,
+    local_file.manifests-machine-api-credentials,
+    local_file.manifests-ingress-operator-credentials,
+    local_file.manifests-cluster-csi-drivers-credentials,
+    local_file.manifests-image-registry-credentials
   ]
 
   triggers = {

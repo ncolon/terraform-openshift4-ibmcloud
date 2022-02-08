@@ -93,6 +93,7 @@ module "master" {
   source = "./master"
   depends_on = [
     module.ignition,
+    module.bootstrap
   ]
   lb_kubernetes_api_private_id         = module.network.lb_kubernetes_api_private_id
   lb_pool_kubernetes_api_private_id    = module.network.lb_pool_kubernetes_api_private_id
