@@ -122,3 +122,21 @@ variable "vpc_name" {
   type    = string
   default = ""
 }
+
+variable "deploy_infra_nodes" {
+  type = bool
+}
+
+variable "deploy_storage_nodes" {
+  type = bool
+}
+
+variable "infra_vm_type" {
+  type    = string
+  default = "bx2-4x16"
+}
+
+variable "storage_vm_type" {
+  type    = string
+  default = "bx2-16x64"
+}

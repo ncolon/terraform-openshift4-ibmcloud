@@ -58,6 +58,11 @@ module "ignition" {
   availability_zones          = data.ibm_is_zones.zones.zones
   ibmcloud_api_key            = var.ibmcloud_api_key
   ibmcloud_cis_crn            = var.ibmcloud_cis_crn
+  deploy_infra_nodes          = var.deploy_infra_nodes
+  deploy_storage_nodes        = var.deploy_storage_nodes
+  infra_vm_type               = var.infra_vm_type
+  storage_vm_type             = var.storage_vm_type
+
 }
 
 

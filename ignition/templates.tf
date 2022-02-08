@@ -386,3 +386,188 @@ resource "local_file" "manifests-image-registry-credentials" {
   content  = data.template_file.manifests-image-registry-credentials.rendered
   filename = "${local.installer_workspace}/manifests/99_openshift-image-registry-credentials.yaml"
 }
+
+data "template_file" "openshift_cluster_api_infra_machineset_yaml" {
+  count    = var.deploy_infra_nodes ? length(var.availability_zones) : 0
+  template = <<EOF
+apiVersion: machine.openshift.io/v1beta1
+kind: MachineSet
+metadata:
+  creationTimestamp: null
+  labels:
+    machine.openshift.io/cluster-api-cluster: ${var.cluster_id}
+  name: ${var.cluster_id}-infra-${count.index + 1}
+  namespace: openshift-machine-api
+spec:
+  replicas: ${local.zone_node_replicas[count.index]}
+  selector:
+    matchLabels:
+      machine.openshift.io/cluster-api-cluster: ${var.cluster_id}
+      machine.openshift.io/cluster-api-machineset: ${var.cluster_id}-infra-${count.index + 1}
+  template:
+    metadata:
+      labels:
+        machine.openshift.io/cluster-api-cluster: ${var.cluster_id}
+        machine.openshift.io/cluster-api-machine-role: infra
+        machine.openshift.io/cluster-api-machine-type: infra
+        machine.openshift.io/cluster-api-machineset: ${var.cluster_id}-infra-${count.index + 1}
+    spec:
+      lifecycleHooks: {}
+      metadata: {}
+      providerSpec:
+        value:
+          apiVersion: ibmcloudproviderconfig.openshift.io/v1beta1
+          credentialsSecret:
+            name: ibmcloud-credentials
+          image: ${var.cluster_id}-rhcos
+          kind: IBMCloudMachineProviderSpec
+          metadata:
+            creationTimestamp: null
+          primaryNetworkInterface:
+            securityGroups:
+            - ${var.cluster_id}-sg-cluster-wide
+            - ${var.cluster_id}-sg-openshift-net
+            subnet: ${var.worker_subnet_names[count.index]}
+          profile: ${var.infra_vm_type}
+          region: ${var.ibmcloud_region}
+          resourceGroup: ${var.resource_group_name}
+          userDataSecret:
+            name: worker-user-data
+          vpc: ${var.vpc_name == "" ? "${var.cluster_id}-vpc" : var.vpc_name}
+          zone: ${var.ibmcloud_region}-${count.index + 1}
+status:
+  replicas: 0
+EOF
+}
+
+resource "local_file" "openshift_cluster_api_infra_machineset_yaml" {
+  count = var.deploy_infra_nodes ? length(var.availability_zones) : 0
+  depends_on = [
+    null_resource.generate_manifests,
+  ]
+  content  = data.template_file.openshift_cluster_api_infra_machineset_yaml[count.index].rendered
+  filename = "${local.installer_workspace}/openshift/99_openshift-cluster-api_infra-machineset-${count.index}.yaml"
+}
+
+data "template_file" "openshift_cluster_api_infra_machineconfigpool_yaml" {
+  count    = var.deploy_infra_nodes ? 1 : 0
+  template = <<EOF
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfigPool
+metadata:
+  name: infra
+spec:
+  machineConfigSelector:
+    matchExpressions:
+    - key: machineconfiguration.openshift.io/role
+      operator: In
+      values: 
+      - worker
+      - infra
+  nodeSelector:
+    matchLabels:
+      node-role.kubernetes.io/infra: ""
+EOF
+}
+
+resource "local_file" "openshift_cluster_api_infra_machineconfigpool_yaml" {
+  count = var.deploy_infra_nodes ? 1 : 0
+  depends_on = [
+    null_resource.generate_manifests,
+  ]
+  content  = data.template_file.openshift_cluster_api_infra_machineconfigpool_yaml.0.rendered
+  filename = "${local.installer_workspace}/openshift/99_openshift_cluster_api_infra_machineconfig_pool.yaml"
+}
+
+data "template_file" "openshift_cluster_api_storage_machineset_yaml" {
+  count    = var.deploy_infra_nodes ? length(var.availability_zones) : 0
+  template = <<EOF
+apiVersion: machine.openshift.io/v1beta1
+kind: MachineSet
+metadata:
+  creationTimestamp: null
+  labels:
+    machine.openshift.io/cluster-api-cluster: ${var.cluster_id}
+  name: ${var.cluster_id}-storage-${count.index + 1}
+  namespace: openshift-machine-api
+spec:
+  replicas: ${local.zone_node_replicas[count.index]}
+  selector:
+    matchLabels:
+      machine.openshift.io/cluster-api-cluster: ${var.cluster_id}
+      machine.openshift.io/cluster-api-machineset: ${var.cluster_id}-storage-${count.index + 1}
+  template:
+    metadata:
+      labels:
+        machine.openshift.io/cluster-api-cluster: ${var.cluster_id}
+        machine.openshift.io/cluster-api-machine-role: storage
+        machine.openshift.io/cluster-api-machine-type: storage
+        machine.openshift.io/cluster-api-machineset: ${var.cluster_id}-storage-${count.index + 1}
+    spec:
+      lifecycleHooks: {}
+      metadata: {}
+      providerSpec:
+        value:
+          apiVersion: ibmcloudproviderconfig.openshift.io/v1beta1
+          credentialsSecret:
+            name: ibmcloud-credentials
+          image: ${var.cluster_id}-rhcos
+          kind: IBMCloudMachineProviderSpec
+          metadata:
+            creationTimestamp: null
+          primaryNetworkInterface:
+            securityGroups:
+            - ${var.cluster_id}-sg-cluster-wide
+            - ${var.cluster_id}-sg-openshift-net
+            subnet: ${var.worker_subnet_names[count.index]}
+          profile: ${var.storage_vm_type}
+          region: ${var.ibmcloud_region}
+          resourceGroup: ${var.resource_group_name}
+          userDataSecret:
+            name: worker-user-data
+          vpc: ${var.vpc_name == "" ? "${var.cluster_id}-vpc" : var.vpc_name}
+          zone: ${var.ibmcloud_region}-${count.index + 1}
+status:
+  replicas: 0
+EOF
+}
+
+resource "local_file" "openshift_cluster_api_storage_machineset_yaml" {
+  count = var.deploy_infra_nodes ? length(var.availability_zones) : 0
+  depends_on = [
+    null_resource.generate_manifests,
+  ]
+  content  = data.template_file.openshift_cluster_api_storage_machineset_yaml[count.index].rendered
+  filename = "${local.installer_workspace}/openshift/99_openshift-cluster-api_storage-machineset-${count.index}.yaml"
+}
+
+data "template_file" "openshift_cluster_api_storage_machineconfigpool_yaml" {
+  count    = var.deploy_infra_nodes ? 1 : 0
+  template = <<EOF
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfigPool
+metadata:
+  name: storage
+spec:
+  machineConfigSelector:
+    matchExpressions:
+    - key: machineconfiguration.openshift.io/role
+      operator: In
+      values: 
+      - worker
+      - storage
+  nodeSelector:
+    matchLabels:
+      node-role.kubernetes.io/storage: ""
+EOF
+}
+
+resource "local_file" "openshift_cluster_api_storage_machineconfigpool_yaml" {
+  count = var.deploy_infra_nodes ? 1 : 0
+  depends_on = [
+    null_resource.generate_manifests,
+  ]
+  content  = data.template_file.openshift_cluster_api_storage_machineconfigpool_yaml.0.rendered
+  filename = "${local.installer_workspace}/openshift/99_openshift_cluster_api_storage_machineconfig_pool.yaml"
+}
+

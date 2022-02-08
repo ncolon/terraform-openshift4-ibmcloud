@@ -204,3 +204,23 @@ variable "rhcos_image_url" {
   description = "(optional) URL of RHCOS image"
   default     = ""
 }
+
+variable "deploy_infra_nodes" {
+  type    = bool
+  default = false
+}
+
+variable "deploy_storage_nodes" {
+  type    = bool
+  default = false
+}
+
+variable "infra_vm_type" {
+  type    = string
+  default = "bx2.4x16"
+}
+
+variable "storage_vm_type" {
+  type    = string
+  default = "bx2.16x64"
+}
