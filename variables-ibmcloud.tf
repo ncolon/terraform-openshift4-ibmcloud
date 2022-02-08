@@ -217,10 +217,10 @@ variable "deploy_storage_nodes" {
 
 variable "infra_vm_type" {
   type    = string
-  default = "bx2.4x16"
+  default = "bx2-4x16"
 }
 
 variable "storage_vm_type" {
   type    = string
-  default = "bx2.16x64"
+  default = "bx2-16x64"
 }
