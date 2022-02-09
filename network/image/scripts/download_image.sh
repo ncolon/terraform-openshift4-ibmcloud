@@ -15,5 +15,5 @@ test -e $local_image_file_uncompressed || {
   gunzip $local_image_file
 }
 
-local_image_file_uncompressed=$(realpath $local_image_file_uncompressed)
+local_image_file_uncompressed="${PWD}/${local_image_file_uncompressed}"
 jq -n --arg local_image_file_uncompressed "$local_image_file_uncompressed" '{"local_image_file_uncompressed":$local_image_file_uncompressed}'
